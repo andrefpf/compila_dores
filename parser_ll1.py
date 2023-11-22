@@ -1,4 +1,4 @@
-from grammar import Epsilon, Grammar, Production, EndMarker
+from grammar import EPSILON, END_MARKER, Grammar, Production
 from functools import partial
 from copy import deepcopy
 
@@ -24,8 +24,8 @@ class Parser:
         node = self.grammar.start_symbol()
 
         tokens = [i for i in tokens]
-        tokens.append(EndMarker())
-        stack.append(EndMarker())
+        tokens.append(END_MARKER)
+        stack.append(END_MARKER)
         stack.append(self.grammar.start_symbol())
 
         while len(stack) > 1:
@@ -54,7 +54,7 @@ class Parser:
             # the same symbol, so it is possible to deal with
             # productions like A -> A + B
             production = self.table[node, token]
-            to_stack = [deepcopy(i) for i in production.target]
+            to_stack = [deepcopy(i) for i in reversed(production.target)]
 
             if callable(production.after_run):
                 function = SemanticRule(
@@ -64,20 +64,20 @@ class Parser:
                 )
                 stack.append(function)
 
-            if Epsilon() in production.target:
+            if EPSILON in production.target:
                 continue
 
             stack.extend(to_stack)
 
         print(stack)
-        if stack.pop() != EndMarker():
+        if stack.pop() != END_MARKER:
             print("Oh no")
 
     def create_table(self):
         table = LL1Table()
 
         for production in self.grammar.productions:
-            nullable = Epsilon() in production.target
+            nullable = EPSILON in production.target
 
             if nullable:
                 for symbol in self.grammar.follow[production.origin]:
@@ -85,7 +85,7 @@ class Parser:
             else:
                 start_symbol = production.target[0]
                 for symbol in self.grammar.first[start_symbol]:
-                    if symbol == Epsilon():
+                    if symbol == EPSILON:
                         continue
                     table[production.origin, symbol] = production
 
