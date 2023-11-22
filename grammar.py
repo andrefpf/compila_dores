@@ -17,11 +17,14 @@ class Epsilon(str):
     def __str__(self) -> str:
         return "Є"
 
+class GrammarSymbol(str):
+    def __init__(self, *args, **kwargs) -> None:
+        str.__init__(*args, **kwargs)
 
 class Production:
     def __init__(self, origin: str, target: str | tuple[str], *, before_run=None, after_run=None):
-        self.origin = origin
-        self.target = tuple(target)
+        self.origin = GrammarSymbol(origin)
+        self.target = tuple(GrammarSymbol(i) for i in target)
         self.before_run = before_run
         self.after_run = after_run
     

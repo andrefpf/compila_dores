@@ -28,33 +28,36 @@ class Syntactic:
         while len(stack) > 1:
             print(stack)
 
-            symbol = tokens[index]
+            token = tokens[index]
             node = stack.pop()
 
             if callable(node):
                 node()
                 continue
 
-            if (node == symbol):
+            if (node == token):
                 index += 1
                 continue
 
             if node in self.grammar.terminal:
-                print(f'Bla bla "{symbol}"')
+                print(f'Bla bla "{token}"')
                 break
 
-            if (node, symbol) not in self.table:
-                print(f'Error. Unexpected pair "{node, symbol}"')
+            if (node, token) not in self.table:
+                print(f'Error. Unexpected pair "{node, token}"')
                 break
 
-            production = self.table[node, symbol]
-            to_stack = [deepcopy(i) for i in reversed(production.target)]
+            # deepcoping here creates different objects for
+            # the same symbol, so it is possible to deal with
+            # productions like A -> A + B
+            production = self.table[node, token]
+            to_stack = [deepcopy(i) for i in production.target]
 
-            if callable(production.before_run):
+            if callable(production.after_run):
                 function = partial(
-                    production.before_run,
-                    production.origin,
-                    *production.target
+                    production.after_run,
+                    node,
+                    *to_stack,
                 )
                 stack.append(function)
 
@@ -84,36 +87,3 @@ class Syntactic:
                     table[production.origin, symbol] = production
 
         self.table = table
-
-
-cfg = Grammar([
-    Production("E", ["T", "E'"]),
-    Production("E'", ["+", "T", "E'"]),
-    Production("E'", [Epsilon()]),
-    Production("T", ["F", "T'"]),
-    Production("T'", ["*", "F", "T'"]),
-    Production("T'", [Epsilon()]),
-    Production("F", ["(", "E", ")"]),
-    Production("F", ["a"]),
-])
-
-cfg = Grammar([
-    Production("S", ["B"]),
-    Production("B", ["0M", "B'"]),
-    Production("B", ["1M", "B'"]),
-    Production("B", ["0"]),
-    Production("B", ["1"]),
-    Production("B'", ["0m", "B"]),
-    Production("B'", ["1m", "B"]),
-    Production("B'", ["0"]),
-    Production("B'", ["1"]),
-])
-
-syn = Syntactic(cfg)
-# for a, b in syn.table.items():
-#     print(f"{a} \t {b}")
-# print()
-
-# tokens = list("a+a*a+a")
-tokens = ['0M','1m','1M','0']
-syn.analyze(tokens)
