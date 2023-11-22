@@ -1,5 +1,5 @@
 
-from syntactic import Grammar, Production, Syntactic
+from parser_ll1 import Grammar, Production, Parser
 
 def f0(a, b):
     a.val = b.val + 1
@@ -17,7 +17,7 @@ cfg = Grammar([
 ])
 
 
-syn = Syntactic(cfg)
+syn = Parser(cfg)
 tokens = 'a'
 syn.analyze(tokens)
 

@@ -1,6 +1,6 @@
 from automata import FiniteAutomata
 from grammar import Grammar, Production, Epsilon
-from syntactic import Syntactic
+from parser_ll1 import Parser
 
 
 productions = [
@@ -24,7 +24,7 @@ for i in "qwertyuiopasdfghjklçzxcvbnm QWERTYUIOPASDFGHJKLÇZXCVBNM 0123456789":
     productions.append(Production("SYMBOL", [i]))
 
 regex_grammar = Grammar(productions)
-syn = Syntactic(regex_grammar)
+syn = Parser(regex_grammar)
 
 tokens = list("AB|A*|b")
 syn.analyze(tokens)

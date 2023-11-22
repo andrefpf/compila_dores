@@ -6,8 +6,11 @@ from copy import deepcopy
 class LL1Table(dict):
     pass
 
+class SemanticRule(partial):
+    def __repr__(self) -> str:
+        return "SemanticRule"
 
-class Syntactic:
+class Parser:
     def __init__(self, grammar: Grammar):
         self.set_grammar(grammar)
 
@@ -54,7 +57,7 @@ class Syntactic:
             to_stack = [deepcopy(i) for i in production.target]
 
             if callable(production.after_run):
-                function = partial(
+                function = SemanticRule(
                     production.after_run,
                     node,
                     *to_stack,
