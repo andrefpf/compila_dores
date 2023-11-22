@@ -1,4 +1,6 @@
 from grammar import Epsilon, Grammar, Production, EndMarker
+from functools import partial
+from copy import deepcopy
 
 
 class LL1Table(dict):
@@ -14,19 +16,24 @@ class Syntactic:
         self.create_table()
     
     def analyze(self, tokens):
-        tokens = [i for i in tokens]
-        tokens.append(EndMarker())
-
         index = 0
         stack = []
+        node = self.grammar.start_symbol()
+
+        tokens = [i for i in tokens]
+        tokens.append(EndMarker())
         stack.append(EndMarker())
         stack.append(self.grammar.start_symbol())
-        node = stack[-1]
 
         while len(stack) > 1:
+            print(stack)
+
             symbol = tokens[index]
-            print(stack, symbol)
             node = stack.pop()
+
+            if callable(node):
+                node()
+                continue
 
             if (node == symbol):
                 index += 1
@@ -41,11 +48,20 @@ class Syntactic:
                 break
 
             production = self.table[node, symbol]
-            
+            to_stack = [deepcopy(i) for i in reversed(production.target)]
+
+            if callable(production.before_run):
+                function = partial(
+                    production.before_run,
+                    production.origin,
+                    *production.target
+                )
+                stack.append(function)
+
             if Epsilon() in production.target:
                 continue
 
-            stack.extend(reversed(production.target))
+            stack.extend(to_stack)
 
         print(stack)
         if stack.pop() != EndMarker():
@@ -81,22 +97,23 @@ cfg = Grammar([
     Production("F", ["a"]),
 ])
 
-# cfg = Grammar([
-#     Production("S", ["B"]),
-#     Production("B", ["0M", "B'"]),
-#     Production("B", ["1M", "B'"]),
-#     Production("B", ["0"]),
-#     Production("B", ["1"]),
-#     Production("B'", ["0m", "B"]),
-#     Production("B'", ["1m", "B"]),
-#     Production("B'", ["0"]),
-#     Production("B'", ["1"]),
-# ])
+cfg = Grammar([
+    Production("S", ["B"]),
+    Production("B", ["0M", "B'"]),
+    Production("B", ["1M", "B'"]),
+    Production("B", ["0"]),
+    Production("B", ["1"]),
+    Production("B'", ["0m", "B"]),
+    Production("B'", ["1m", "B"]),
+    Production("B'", ["0"]),
+    Production("B'", ["1"]),
+])
 
 syn = Syntactic(cfg)
 # for a, b in syn.table.items():
 #     print(f"{a} \t {b}")
 # print()
 
-tokens = list("a+a*a+a")
+# tokens = list("a+a*a+a")
+tokens = ['0M','1m','1M','0']
 syn.analyze(tokens)

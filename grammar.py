@@ -19,9 +19,11 @@ class Epsilon(str):
 
 
 class Production:
-    def __init__(self, origin: str, target: str | tuple[str]):
+    def __init__(self, origin: str, target: str | tuple[str], *, before_run=None, after_run=None):
         self.origin = origin
         self.target = tuple(target)
+        self.before_run = before_run
+        self.after_run = after_run
     
     def __str__(self) -> str:
         targets = " ".join(str(i) for i in self.target)

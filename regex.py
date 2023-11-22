@@ -4,12 +4,11 @@ from syntactic import Syntactic
 
 
 productions = [
-    Production("S", ["OR"]),
     Production("OR", ["AND", "OR1"]),
     Production("OR1", ["|", "OR"]),
     Production("OR1", [Epsilon()]),
 
-    Production("AND", ["STAR", "AND1"]),
+    Production("AND", ["GROUP", "AND1"]),
     Production("AND1", ["AND"]),
     Production("AND1", [Epsilon()]),
 
@@ -21,14 +20,11 @@ productions = [
     Production("GROUP1", [Epsilon()]),
 ]
 
-# for i in "qwertyuiopasdfghjklçzxcvbnm QWERTYUIOPASDFGHJKLÇZXCVBNM 0123456789":
-for i in "AB|":
+for i in "qwertyuiopasdfghjklçzxcvbnm QWERTYUIOPASDFGHJKLÇZXCVBNM 0123456789":
     productions.append(Production("SYMBOL", [i]))
 
 regex_grammar = Grammar(productions)
 syn = Syntactic(regex_grammar)
 
-print(syn.table)
-
-tokens = list("AB|A")
+tokens = list("AB|A*|b")
 syn.analyze(tokens)
