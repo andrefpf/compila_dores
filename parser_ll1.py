@@ -34,7 +34,7 @@ class Parser:
             token = tokens[index]
             node = stack.pop()
 
-            if callable(node):
+            if isinstance(node, SemanticRule):
                 node()
                 continue
 
@@ -50,24 +50,30 @@ class Parser:
                 print(f'Error. Unexpected pair "{node, token}"')
                 break
 
-            # deepcoping here creates different objects for
-            # the same symbol, so it is possible to deal with
-            # productions like A -> A + B
             production = self.table[node, token]
-            to_stack = [deepcopy(i) for i in reversed(production.target)]
-
-            if callable(production.after_run):
-                function = SemanticRule(
-                    production.after_run,
-                    node,
-                    *to_stack,
-                )
-                stack.append(function)
+            to_stack = []
+            avaliable_params = []
+            for data in production.target:
+                if callable(data):
+                    rule = SemanticRule(
+                        data,
+                        node,
+                        *avaliable_params
+                    )
+                    to_stack.append(rule)
+                else:
+                    # deepcoping here creates different objects for
+                    # the same symbol, so it is possible to deal with
+                    # productions like A -> A + B
+                    copied_data = deepcopy(data)
+                    to_stack.append(copied_data)
+                    avaliable_params.append(copied_data)
 
             if EPSILON in production.target:
                 continue
-
-            stack.extend(to_stack)
+            
+            # Stacks are FIFO, so we put it in reverse
+            stack.extend(reversed(to_stack))
 
         print(stack)
         if stack.pop() != END_MARKER:
@@ -77,13 +83,14 @@ class Parser:
         table = LL1Table()
 
         for production in self.grammar.productions:
-            nullable = EPSILON in production.target
+            target_symbols = production.get_target_symbols()
+            nullable = EPSILON in target_symbols
 
             if nullable:
                 for symbol in self.grammar.follow[production.origin]:
                     table[production.origin, symbol] = production
             else:
-                start_symbol = production.target[0]
+                start_symbol = target_symbols[0]
                 for symbol in self.grammar.first[start_symbol]:
                     if symbol == EPSILON:
                         continue
