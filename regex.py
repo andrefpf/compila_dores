@@ -162,7 +162,7 @@ productions = [
     Production("GROUP", ["SYMBOL", op0_group]),
 ]
 
-for i in ALPHANUMERIC:
+for i in ALPHANUMERIC + " ":
     prod = Production("SYMBOL", [i, op_symbol])
     productions.append(prod)
 
@@ -355,17 +355,15 @@ def compiles(expression: str) -> FiniteAutomata:
 
 
 # tokens = "ab|a(bc)d*"
-# s = syn.analyze(tokens)
-
 # print(s.syn_tree)
 
-automata = compiles(r"abc?")
+# automata = compiles(r"abc?")
 
-word = "ab"
-result = automata.evaluate(word)
-print(result)
+# word = "ab"
+# result = automata.evaluate(word)
+# print(result)
 
-word = "abc"
-result = automata.evaluate(word)
-print(result)
+# word = "abc"
+# result = automata.evaluate(word)
+# print(result)
 

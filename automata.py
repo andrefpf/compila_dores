@@ -54,6 +54,23 @@ class FiniteAutomata:
             state = self.states[last_state_index]
             return state.is_final
 
+    def match(self, string: str):
+        """
+        Finds the longest portion of the string (from its beginning)
+        that still matches the automata language.
+        """
+        length = 0
+
+        for i, state_index in enumerate(self.iterate(string)):
+            if state_index == DEAD_STATE_INDEX:
+                break
+
+            state: State = self.states[state_index]
+            if state.is_final:
+                length = i
+
+        return string[:length]
+
     def compute(self, origin, symbol):
         """
         Executes a single step of computation from a origin state through a symbol, then returns the next state.

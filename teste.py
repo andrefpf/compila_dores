@@ -1,41 +1,10 @@
-
-from parser_ll1 import Grammar, Production, Parser
-
-def f0(a, b):
-    a.val = b.val + 1
-    print(a.val)
-
-def f1(a, _):
-    a.val = 0
-    print(a.val)
-
-cfg = Grammar([
-    Production("A", ["B"], after_run=f0),
-    Production("B", ["C"], after_run=f0),
-    Production("C", ["D"], after_run=f0),
-    Production("D", ["a"], after_run=f1),
-])
+from cclang_tokenizer import CCLangTokenizer
 
 
-syn = Parser(cfg)
-tokens = 'a'
-syn.analyze(tokens)
+tokenizer = CCLangTokenizer()
 
+input_string = "abc 123 hello world"
+bla = tokenizer.run(input_string)
 
-
-# from functools import partial
-
-# a = []
-
-# def append_2(lista):
-#     lista.append(2)
-# class test(partial):
-#     pass
-
-# bla = test(append_2, a)
-
-# bla()
-# bla()
-# bla()
-
-# print(a)
+for i in bla:
+    print(i)
