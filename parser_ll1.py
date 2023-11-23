@@ -52,7 +52,7 @@ class Parser:
                 continue
 
             if node in self.grammar.terminal:
-                print(f'Bla bla "{token}"')
+                print(f'Bla bla "{node}"')
                 break
 
             if (node, token.name) not in self.table:

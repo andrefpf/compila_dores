@@ -91,6 +91,9 @@ def op0_group(group, symbol):
 def op1_group(group, _0, expression, _1):
     group.syn_tree = expression.syn_tree
 
+def op2_group(group, _, special_symbol):
+    group.syn_tree = special_symbol.syn_tree
+
 # 
 def op0_unity(unity, group, unity1):
     unity1.her_tree = group.syn_tree
@@ -163,12 +166,18 @@ productions = [
     Production("UNITY1", ["?", op4_unity]),
     Production("UNITY1", [EPSILON, op5_unity]),
 
-    Production("GROUP", ["(", "EXPRESSION", ")", op1_group]),
     Production("GROUP", ["SYMBOL", op0_group]),
+    Production("GROUP", ["(", "EXPRESSION", ")", op1_group]),
+    Production("GROUP", ["\\", "SPECIAL_SYMBOL", op2_group]),
 ]
+
 
 for i in ALPHANUMERIC + " ":
     prod = Production("SYMBOL", [i, op_symbol])
+    productions.append(prod)
+
+for i in "+*?\\":
+    prod = Production("SPECIAL_SYMBOL", [i, op_symbol])
     productions.append(prod)
 
 class RegexTokenizer(Tokenizer):
@@ -184,17 +193,8 @@ class RegexTokenizer(Tokenizer):
         for shortcut, replacement in self.simplifications.items():
             string = string.replace(shortcut, replacement)
 
-        special = False
         for i in string:
-            if special:
-                yield Token(f"\\{i}", f"\\{i}")
-
-            elif i == "\\":
-                special = True
-                continue
-
-            else:
-                yield Token(name=i, lexema=i)
+            yield Token(name=i, lexema=i)
 
 regex_tokenizer = RegexTokenizer()
 regex_grammar = Grammar(productions)
@@ -337,7 +337,7 @@ def get_leafs(tree):
     return leafs
 
 
-def compiles(expression: str) -> FiniteAutomata:
+def compile(expression: str) -> FiniteAutomata:
     """
     Converts a regular expression into equivalent Finite Automata.
     """
@@ -373,7 +373,7 @@ def compiles(expression: str) -> FiniteAutomata:
 # tokens = "ab|a(bc)d*"
 # print(s.syn_tree)
 
-# automata = compiles(r"abc?")
+# automata = compile(r"abc?")
 
 # word = "ab"
 # result = automata.evaluate(word)

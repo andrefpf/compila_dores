@@ -1,5 +1,5 @@
 from tokenizer import Tokenizer, Token
-import regex
+import regexp
 from collections.abc import Generator
 
 class CCLangTokenizer(Tokenizer):
@@ -11,7 +11,7 @@ class CCLangTokenizer(Tokenizer):
 
     def run(self, string: str) -> Generator[Token]:
         all_machines = {
-            name : regex.compiles(exp) 
+            name : regexp.compile(exp) 
             for name, exp in self.all_expressions.items()
         }
 
