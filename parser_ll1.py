@@ -21,18 +21,23 @@ class Parser:
     def analyze(self, tokens):
         index = 0
         stack = []
-        node = self.grammar.start_symbol()
+
+        start_symbol = deepcopy(self.grammar.start_symbol())
+        node = start_symbol
 
         tokens = [i for i in tokens]
         tokens.append(END_MARKER)
         stack.append(END_MARKER)
-        stack.append(self.grammar.start_symbol())
+        stack.append(start_symbol)
 
         while len(stack) > 1:
-            print(stack)
+            # print(stack)
 
             token = tokens[index]
             node = stack.pop()
+
+            if node == EPSILON:
+                continue
 
             if isinstance(node, SemanticRule):
                 node()
@@ -51,33 +56,29 @@ class Parser:
                 break
 
             production = self.table[node, token]
-            to_stack = []
-            avaliable_params = []
-            for data in production.target:
-                if callable(data):
-                    rule = SemanticRule(
-                        data,
-                        node,
-                        *avaliable_params
-                    )
-                    to_stack.append(rule)
-                else:
-                    # deepcoping here creates different objects for
-                    # the same symbol, so it is possible to deal with
-                    # productions like A -> A + B
-                    copied_data = deepcopy(data)
-                    to_stack.append(copied_data)
-                    avaliable_params.append(copied_data)
+            # deepcoping here creates different objects for
+            # the same symbol, so it is possible to deal with
+            # productions like A -> A + B
+            to_stack = [deepcopy(i) for i in production.target]
+            avaliable_params = [i for i in to_stack if not callable(i)]
 
-            if EPSILON in production.target:
-                continue
+            for i, val in enumerate(to_stack):
+                if callable(val):
+                    rule = SemanticRule(
+                        val,
+                        node,
+                        *avaliable_params,
+                    )
+                    to_stack[i] = rule
             
             # Stacks are FIFO, so we put it in reverse
             stack.extend(reversed(to_stack))
 
-        print(stack)
+        # print(stack)
         if stack.pop() != END_MARKER:
             print("Oh no")
+        
+        return start_symbol
 
     def create_table(self):
         table = LL1Table()

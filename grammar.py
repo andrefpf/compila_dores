@@ -25,7 +25,7 @@ class GrammarSymbol(str):
         str.__init__(*args, **kwargs)
 
 class Production:
-    def __init__(self, origin: str, target: str | tuple[str], *, before_run=None, after_run=None):
+    def __init__(self, origin: str, target: str | tuple[str]):
         self.origin = GrammarSymbol(origin)
         self.target = self._fix_target_types(target)
 
