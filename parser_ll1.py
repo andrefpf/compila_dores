@@ -1,7 +1,7 @@
 from grammar import EPSILON, END_MARKER, Grammar, Production
 from functools import partial
 from copy import deepcopy
-from tokenizer import Tokenizer
+from tokenizer import Tokenizer, Token
 
 class LL1Table(dict):
     pass
@@ -30,7 +30,7 @@ class Parser:
         node = start_symbol
 
         tokens = [i for i in self.tokenizer.run(string)]
-        tokens.append(END_MARKER)
+        tokens.append(Token(END_MARKER, END_MARKER))
         stack.append(END_MARKER)
         stack.append(start_symbol)
 
@@ -47,7 +47,7 @@ class Parser:
                 node()
                 continue
 
-            if (node == token):
+            if (node == token.name):
                 index += 1
                 continue
 
@@ -55,11 +55,11 @@ class Parser:
                 print(f'Bla bla "{token}"')
                 break
 
-            if (node, token) not in self.table:
+            if (node, token.name) not in self.table:
                 print(f'Error. Unexpected pair "{node, token}"')
                 break
 
-            production = self.table[node, token]
+            production = self.table[node, token.name]
             # deepcoping here creates different objects for
             # the same symbol, so it is possible to deal with
             # productions like A -> A + B

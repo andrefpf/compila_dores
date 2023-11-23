@@ -1,17 +1,15 @@
 from tokenizer import Tokenizer, Token
 import regex
-
+from collections.abc import Generator
 
 class CCLangTokenizer(Tokenizer):
     all_expressions = dict(
         identifier = r"[a-zA-Z]([a-zA-Z]|[0-9])*",
         number = r"[0-9]+",
         _ = r" ",
-        # sub = r"-",
-        # div = r"/",
     )
 
-    def run(self, string):
+    def run(self, string: str) -> Generator[Token]:
         all_machines = {
             name : regex.compiles(exp) 
             for name, exp in self.all_expressions.items()

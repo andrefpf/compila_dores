@@ -1,5 +1,5 @@
 from automata import FiniteAutomata, State
-from tokenizer import Tokenizer
+from tokenizer import Tokenizer, Token
 from grammar import Grammar, Production, EPSILON
 from parser_ll1 import Parser
 
@@ -7,6 +7,8 @@ from collections import defaultdict
 from collections import defaultdict, deque
 from itertools import count
 from treelib import Tree
+from collections.abc import Generator
+
 
 DIGITS = "0123456789"
 LOWER_CASE = "abcdefghijklmnopqrstuvxwyz"
@@ -27,6 +29,9 @@ class RegexNode:
         self.nullable = False
 
     def tree_str(self):
+        """
+        Returns a string that represents the tree graphically.
+        """
         def representation(node):
             if isinstance(node, UnionNode):
                 return "or"
@@ -175,10 +180,21 @@ class RegexTokenizer(Tokenizer):
         "[a-zA-Z]": f"({any_lower_case}|{any_upper_case})",
     }
 
-    def run(self, string):
+    def run(self, string: str) -> Generator[Token]:
         for shortcut, replacement in self.simplifications.items():
             string = string.replace(shortcut, replacement)
-        yield from string
+
+        special = False
+        for i in string:
+            if special:
+                yield Token(f"\\{i}", f"\\{i}")
+
+            elif i == "\\":
+                special = True
+                continue
+
+            else:
+                yield Token(name=i, lexema=i)
 
 regex_tokenizer = RegexTokenizer()
 regex_grammar = Grammar(productions)
