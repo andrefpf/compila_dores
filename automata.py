@@ -60,12 +60,7 @@ class FiniteAutomata:
         The symbol & is used to mark epsilon transitions. If the symbol to match in the string is & we look for
         a transition through "\\&", this way we can handle this symbol with the automata.
         """
-
-        if symbol == "&":
-            transition = (origin, "\\&")
-        else:
-            transition = (origin, symbol)
-
+        transition = (origin, symbol)
         return self.transition_map.get(transition, DEAD_STATE_INDEX)
 
     def _create_transition_map(self, transitions):
