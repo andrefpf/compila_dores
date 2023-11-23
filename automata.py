@@ -74,8 +74,6 @@ class FiniteAutomata:
     def compute(self, origin, symbol):
         """
         Executes a single step of computation from a origin state through a symbol, then returns the next state.
-        The symbol & is used to mark epsilon transitions. If the symbol to match in the string is & we look for
-        a transition through "\\&", this way we can handle this symbol with the automata.
         """
         transition = (origin, symbol)
         return self.transition_map.get(transition, DEAD_STATE_INDEX)
