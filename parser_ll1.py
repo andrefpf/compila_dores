@@ -1,7 +1,7 @@
 from grammar import EPSILON, END_MARKER, Grammar, Production
 from functools import partial
 from copy import deepcopy
-
+from tokenizer import Tokenizer
 
 class LL1Table(dict):
     pass
@@ -11,21 +11,25 @@ class SemanticRule(partial):
         return "SemanticRule"
 
 class Parser:
-    def __init__(self, grammar: Grammar):
+    def __init__(self, tokenizer: Tokenizer,  grammar: Grammar):
+        self.set_tokenizer(tokenizer)
         self.set_grammar(grammar)
+
+    def set_tokenizer(self, tokenizer: Tokenizer):
+        self.tokenizer = tokenizer
 
     def set_grammar(self, grammar: Grammar):
         self.grammar = grammar
         self.create_table()
     
-    def analyze(self, tokens):
+    def analyze(self, string):
         index = 0
         stack = []
 
         start_symbol = deepcopy(self.grammar.start_symbol())
         node = start_symbol
 
-        tokens = [i for i in tokens]
+        tokens = [i for i in self.tokenizer.run(string)]
         tokens.append(END_MARKER)
         stack.append(END_MARKER)
         stack.append(start_symbol)

@@ -1,4 +1,5 @@
 from automata import FiniteAutomata, State
+from tokenizer import Tokenizer
 from grammar import Grammar, Production, EPSILON
 from parser_ll1 import Parser
 
@@ -7,6 +8,16 @@ from collections import defaultdict, deque
 from itertools import count
 from treelib import Tree
 
+DIGITS = "0123456789"
+LOWER_CASE = "abcdefghijklmnopqrstuvxwyz"
+UPPER_CASE = "ABCDEFGHIJKLMNOPQRSTUVXWYZ"
+ACCENTUATED = "áãàâãéêíóôúüçÁÀÂÉÊÍÓÔÚÜÇ"
+ALPHANUMERIC = DIGITS + LOWER_CASE + UPPER_CASE
+
+any_digit = "|".join(DIGITS)
+any_lower_case = "|".join(LOWER_CASE)
+any_upper_case = "|".join(UPPER_CASE)
+any_alphanumeric = "|".join(ALPHANUMERIC)
 
 class RegexNode:
     def __init__(self, *children):
@@ -89,6 +100,9 @@ def op3_unity(unity, _):
     unity.syn_tree = ConcatNode(unity.her_tree, ClosureNode(unity.her_tree))
 
 def op4_unity(unity, _):
+    unity.syn_tree = UnionNode(EpsilonNode(), unity.her_tree)
+
+def op5_unity(unity, _):
     unity.syn_tree = unity.her_tree
 
 #
@@ -141,18 +155,34 @@ productions = [
     Production("UNITY", ["GROUP", op0_unity, "UNITY1", op1_unity]),
     Production("UNITY1", ["*", op2_unity]),
     Production("UNITY1", ["+", op3_unity]),
-    Production("UNITY1", [EPSILON, op4_unity]),
+    Production("UNITY1", ["?", op4_unity]),
+    Production("UNITY1", [EPSILON, op5_unity]),
 
     Production("GROUP", ["(", "EXPRESSION", ")", op1_group]),
     Production("GROUP", ["SYMBOL", op0_group]),
 ]
 
-for i in "qwertyuiopasdfghjklçzxcvbnm QWERTYUIOPASDFGHJKLÇZXCVBNM 0123456789":
+for i in ALPHANUMERIC:
     prod = Production("SYMBOL", [i, op_symbol])
     productions.append(prod)
 
+class RegexTokenizer(Tokenizer):
+    simplifications = {
+        "[0-9]": f"({any_digit})",
+        "[a-z]": f"({any_lower_case})",
+        "[A-Z]": f"({any_upper_case})",
+        "[a-Z]": f"({any_lower_case}|{any_upper_case})",
+        "[a-zA-Z]": f"({any_lower_case}|{any_upper_case})",
+    }
+
+    def run(self, string):
+        for shortcut, replacement in self.simplifications.items():
+            string = string.replace(shortcut, replacement)
+        yield from string
+
+regex_tokenizer = RegexTokenizer()
 regex_grammar = Grammar(productions)
-regex_parser = Parser(regex_grammar)
+regex_parser = Parser(regex_tokenizer, regex_grammar)
 
 # for i in regex_grammar.first.items():
 #     print(i)
@@ -329,13 +359,13 @@ def compiles(expression: str) -> FiniteAutomata:
 
 # print(s.syn_tree)
 
-automata = compiles(r"ab|a(bc)d*")
+automata = compiles(r"abc?")
 
-word = "abcddd"
+word = "ab"
 result = automata.evaluate(word)
 print(result)
 
-word = "addd"
+word = "abc"
 result = automata.evaluate(word)
 print(result)
 
